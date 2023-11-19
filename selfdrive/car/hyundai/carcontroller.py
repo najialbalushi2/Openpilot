@@ -6,7 +6,7 @@ from opendbc.can.packer import CANPacker
 from openpilot.selfdrive.car import apply_driver_steer_torque_limits, common_fault_avoidance
 from openpilot.selfdrive.car.hyundai import hyundaicanfd, hyundaican
 from openpilot.selfdrive.car.hyundai.hyundaicanfd import CanBus
-from openpilot.selfdrive.car.hyundai.values import HyundaiFlags, Buttons, CarControllerParams, CANFD_CAR, CAR
+from openpilot.selfdrive.car.hyundai.values import HyundaiFlags, Buttons, CarControllerParams, CANFD_CAR, CAR, CAN_CANFD_CAR
 
 VisualAlert = car.CarControl.HUDControl.VisualAlert
 LongCtrlState = car.CarControl.Actuators.LongControlState
@@ -102,9 +102,11 @@ class CarController:
       if self.CP.flags & HyundaiFlags.ENABLE_BLINKERS:
         can_sends.append([0x7b1, 0, b"\x02\x3E\x80\x00\x00\x00\x00\x00", self.CAN.ECAN])
 
+    hda2 = self.CP.flags & HyundaiFlags.CANFD_HDA2
+    hda2_can_canfd = hda2 and self.CP.flags & HyundaiFlags.CAN_CANFD
+
     # CAN-FD platforms
-    if self.CP.carFingerprint in CANFD_CAR:
-      hda2 = self.CP.flags & HyundaiFlags.CANFD_HDA2
+    if self.CP.carFingerprint in CANFD_CAR and (self.CP.carFingerprint not in CAN_CANFD_CAR or hda2_can_canfd):
       hda2_long = hda2 and self.CP.openpilotLongitudinalControl
 
       # steering control
@@ -137,7 +139,7 @@ class CarController:
       can_sends.append(hyundaican.create_lkas11(self.packer, self.frame, self.car_fingerprint, apply_steer, apply_steer_req,
                                                 torque_fault, CS.lkas11, sys_warning, sys_state, CC.enabled,
                                                 hud_control.leftLaneVisible, hud_control.rightLaneVisible,
-                                                left_lane_warning, right_lane_warning))
+                                                left_lane_warning, right_lane_warning, self.CP))
 
       if not self.CP.openpilotLongitudinalControl:
         can_sends.extend(self.create_button_messages(CC, CS, use_clu11=True))
@@ -152,7 +154,7 @@ class CarController:
 
       # 20 Hz LFA MFA message
       if self.frame % 5 == 0 and self.CP.flags & HyundaiFlags.SEND_LFA.value:
-        can_sends.append(hyundaican.create_lfahda_mfc(self.packer, CC.enabled))
+        can_sends.append(hyundaican.create_lfahda_mfc(self.packer, self.frame, CC.enabled, self.CP))
 
       # 5 Hz ACC options
       if self.frame % 20 == 0 and self.CP.openpilotLongitudinalControl:
@@ -174,12 +176,12 @@ class CarController:
     can_sends = []
     if use_clu11:
       if CC.cruiseControl.cancel:
-        can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.CANCEL, self.CP.carFingerprint))
+        can_sends.append(hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.CANCEL, self.CP))
       elif CC.cruiseControl.resume:
         # send resume at a max freq of 10Hz
         if (self.frame - self.last_button_frame) * DT_CTRL > 0.1:
           # send 25 messages at a time to increases the likelihood of resume being accepted
-          can_sends.extend([hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.RES_ACCEL, self.CP.carFingerprint)] * 25)
+          can_sends.extend([hyundaican.create_clu11(self.packer, self.frame, CS.clu11, Buttons.RES_ACCEL, self.CP)] * 25)
           if (self.frame - self.last_button_frame) * DT_CTRL >= 0.15:
             self.last_button_frame = self.frame
     else:

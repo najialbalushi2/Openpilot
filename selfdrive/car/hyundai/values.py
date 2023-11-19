@@ -48,6 +48,11 @@ class CarControllerParams:
       self.STEER_DELTA_UP = 2
       self.STEER_DELTA_DOWN = 3
 
+    elif CP.flags & HyundaiFlags.CAN_CANFD:
+      self.STEER_MAX = 270
+      self.STEER_DELTA_UP = 2
+      self.STEER_DELTA_DOWN = 3
+
     # Default for most HKG
     else:
       self.STEER_MAX = 384
@@ -65,6 +70,7 @@ class HyundaiFlags(IntFlag):
   SEND_LFA = 128
   USE_FCA = 256
   CANFD_HDA2_ALT_STEERING = 512
+  CAN_CANFD = 1024
 
 
 class CAR(StrEnum):
@@ -95,6 +101,7 @@ class CAR(StrEnum):
   SONATA_LF = "HYUNDAI SONATA 2019"
   TUCSON = "HYUNDAI TUCSON 2019"
   PALISADE = "HYUNDAI PALISADE 2020"
+  PALISADE_2023 = "HYUNDAI PALISADE 2023"
   VELOSTER = "HYUNDAI VELOSTER 2019"
   SONATA_HYBRID = "HYUNDAI SONATA HYBRID 2021"
   IONIQ_5 = "HYUNDAI IONIQ 5 2022"
@@ -206,6 +213,10 @@ CAR_INFO: Dict[str, Optional[Union[HyundaiCarInfo, List[HyundaiCarInfo]]]] = {
   CAR.PALISADE: [
     HyundaiCarInfo("Hyundai Palisade 2020-22", "All", video_link="https://youtu.be/TAnDqjF4fDY?t=456", car_parts=CarParts.common([CarHarness.hyundai_h])),
     HyundaiCarInfo("Kia Telluride 2020-22", "All", car_parts=CarParts.common([CarHarness.hyundai_h])),
+  ],
+  CAR.PALISADE_2023: [
+    HyundaiCarInfo("Hyundai Palisade (without HDA II) 2023", "All", car_parts=CarParts.common([CarHarness.hyundai_a])),
+    HyundaiCarInfo("Kia Telluride (without HDA II) 2023", "All", car_parts=CarParts.common([CarHarness.hyundai_l])),
   ],
   CAR.VELOSTER: HyundaiCarInfo("Hyundai Veloster 2019-20", min_enable_speed=5. * CV.MPH_TO_MS, car_parts=CarParts.common([CarHarness.hyundai_e])),
   CAR.SONATA_HYBRID: HyundaiCarInfo("Hyundai Sonata Hybrid 2020-23", "All", car_parts=CarParts.common([CarHarness.hyundai_a])),
@@ -2093,12 +2104,24 @@ FW_VERSIONS = {
       b'\xf1\x00GL3_ RDR -----      1.00 1.02 99110-L8000         ',
     ],
   },
+  CAR.PALISADE_2023: {
+    (Ecu.fwdCamera, 0x7c4, None): [
+      b'\xf1\x00LX2 MFC  AT USA LHD 1.00 1.04 99211-S8150 220622',
+      b'\xf1\x00ON  MFC  AT USA LHD 1.00 1.01 99211-S9150 220708',
+    ],
+    (Ecu.fwdRadar, 0x7d0, None): [
+      b'\xf1\x00LX2_ SCC -----      1.00 1.01 99110-S8150         ',
+      b'\xf1\x00ON__ SCC -----      1.00 1.01 99110-S9150         ',
+      b'\xf1\x00LX2_ SCC FHCUP      1.00 1.01 99110-S8150         ',
+      b'\xf1\x00ON__ SCC FHCUP      1.00 1.01 99110-S9150         ',
+    ],
+  },
 }
 
 CHECKSUM = {
   "crc8": [CAR.SANTA_FE, CAR.SONATA, CAR.PALISADE, CAR.KIA_SELTOS, CAR.ELANTRA_2021, CAR.ELANTRA_HEV_2021,
            CAR.SONATA_HYBRID, CAR.SANTA_FE_2022, CAR.KIA_K5_2021, CAR.SANTA_FE_HEV_2022, CAR.SANTA_FE_PHEV_2022,
-           CAR.KIA_K5_HEV_2020, CAR.CUSTIN_1ST_GEN],
+           CAR.KIA_K5_HEV_2020, CAR.CUSTIN_1ST_GEN, CAR.PALISADE_2023],
   "6B": [CAR.KIA_SORENTO, CAR.HYUNDAI_GENESIS],
 }
 
@@ -2111,11 +2134,15 @@ CAN_GEARS = {
 CANFD_CAR = {CAR.KIA_EV6, CAR.IONIQ_5, CAR.IONIQ_6, CAR.TUCSON_4TH_GEN, CAR.TUCSON_HYBRID_4TH_GEN, CAR.KIA_SPORTAGE_HYBRID_5TH_GEN,
              CAR.SANTA_CRUZ_1ST_GEN, CAR.KIA_SPORTAGE_5TH_GEN, CAR.GENESIS_GV70_1ST_GEN, CAR.KIA_SORENTO_PHEV_4TH_GEN,
              CAR.GENESIS_GV60_EV_1ST_GEN, CAR.KIA_SORENTO_4TH_GEN, CAR.KIA_NIRO_HEV_2ND_GEN, CAR.KIA_NIRO_EV_2ND_GEN,
-             CAR.GENESIS_GV80, CAR.KIA_CARNIVAL_4TH_GEN, CAR.KIA_SORENTO_HEV_4TH_GEN, CAR.KONA_EV_2ND_GEN, CAR.KIA_K8_HEV_1ST_GEN}
+             CAR.GENESIS_GV80, CAR.KIA_CARNIVAL_4TH_GEN, CAR.KIA_SORENTO_HEV_4TH_GEN, CAR.KONA_EV_2ND_GEN, CAR.KIA_K8_HEV_1ST_GEN,
+             CAR.PALISADE_2023}
+
+# These cars have hybrid definitions of CAN and CAN-FD
+CAN_CANFD_CAR = {CAR.PALISADE_2023, }
 
 # The radar does SCC on these cars when HDA I, rather than the camera
 CANFD_RADAR_SCC_CAR = {CAR.GENESIS_GV70_1ST_GEN, CAR.KIA_SORENTO_PHEV_4TH_GEN, CAR.KIA_SORENTO_4TH_GEN, CAR.GENESIS_GV80,
-                       CAR.KIA_CARNIVAL_4TH_GEN, CAR.KIA_SORENTO_HEV_4TH_GEN}
+                       CAR.KIA_CARNIVAL_4TH_GEN, CAR.KIA_SORENTO_HEV_4TH_GEN, CAR.PALISADE_2023}
 
 # These CAN FD cars do not accept communication control to disable the ADAS ECU,
 # responds with 0x7F2822 - 'conditions not correct'
@@ -2191,25 +2218,26 @@ DBC = {
   CAR.PALISADE: dbc_dict('hyundai_kia_generic', 'hyundai_kia_mando_front_radar_generated'),
   CAR.VELOSTER: dbc_dict('hyundai_kia_generic', None),
   CAR.KIA_CEED: dbc_dict('hyundai_kia_generic', None),
-  CAR.KIA_EV6: dbc_dict('hyundai_canfd', None),
+  CAR.KIA_EV6: dbc_dict('hyundai_canfd_generated', None),
   CAR.SONATA_HYBRID: dbc_dict('hyundai_kia_generic', 'hyundai_kia_mando_front_radar_generated'),
-  CAR.TUCSON_4TH_GEN: dbc_dict('hyundai_canfd', None),
-  CAR.TUCSON_HYBRID_4TH_GEN: dbc_dict('hyundai_canfd', None),
-  CAR.IONIQ_5: dbc_dict('hyundai_canfd', None),
-  CAR.IONIQ_6: dbc_dict('hyundai_canfd', None),
-  CAR.SANTA_CRUZ_1ST_GEN: dbc_dict('hyundai_canfd', None),
-  CAR.KIA_SPORTAGE_5TH_GEN: dbc_dict('hyundai_canfd', None),
-  CAR.KIA_SPORTAGE_HYBRID_5TH_GEN: dbc_dict('hyundai_canfd', None),
-  CAR.GENESIS_GV70_1ST_GEN: dbc_dict('hyundai_canfd', None),
-  CAR.KIA_SORENTO_PHEV_4TH_GEN: dbc_dict('hyundai_canfd', None),
-  CAR.GENESIS_GV60_EV_1ST_GEN: dbc_dict('hyundai_canfd', None),
-  CAR.KIA_SORENTO_4TH_GEN: dbc_dict('hyundai_canfd', None),
-  CAR.KIA_NIRO_HEV_2ND_GEN: dbc_dict('hyundai_canfd', None),
-  CAR.KIA_NIRO_EV_2ND_GEN: dbc_dict('hyundai_canfd', None),
-  CAR.GENESIS_GV80: dbc_dict('hyundai_canfd', None),
-  CAR.KIA_CARNIVAL_4TH_GEN: dbc_dict('hyundai_canfd', None),
-  CAR.KIA_SORENTO_HEV_4TH_GEN: dbc_dict('hyundai_canfd', None),
-  CAR.KONA_EV_2ND_GEN: dbc_dict('hyundai_canfd', None),
-  CAR.KIA_K8_HEV_1ST_GEN: dbc_dict('hyundai_canfd', None),
+  CAR.TUCSON_4TH_GEN: dbc_dict('hyundai_canfd_generated', None),
+  CAR.TUCSON_HYBRID_4TH_GEN: dbc_dict('hyundai_canfd_generated', None),
+  CAR.IONIQ_5: dbc_dict('hyundai_canfd_generated', None),
+  CAR.IONIQ_6: dbc_dict('hyundai_canfd_generated', None),
+  CAR.SANTA_CRUZ_1ST_GEN: dbc_dict('hyundai_canfd_generated', None),
+  CAR.KIA_SPORTAGE_5TH_GEN: dbc_dict('hyundai_canfd_generated', None),
+  CAR.KIA_SPORTAGE_HYBRID_5TH_GEN: dbc_dict('hyundai_canfd_generated', None),
+  CAR.GENESIS_GV70_1ST_GEN: dbc_dict('hyundai_canfd_generated', None),
+  CAR.KIA_SORENTO_PHEV_4TH_GEN: dbc_dict('hyundai_canfd_generated', None),
+  CAR.GENESIS_GV60_EV_1ST_GEN: dbc_dict('hyundai_canfd_generated', None),
+  CAR.KIA_SORENTO_4TH_GEN: dbc_dict('hyundai_canfd_generated', None),
+  CAR.KIA_NIRO_HEV_2ND_GEN: dbc_dict('hyundai_canfd_generated', None),
+  CAR.KIA_NIRO_EV_2ND_GEN: dbc_dict('hyundai_canfd_generated', None),
+  CAR.GENESIS_GV80: dbc_dict('hyundai_canfd_generated', None),
+  CAR.KIA_CARNIVAL_4TH_GEN: dbc_dict('hyundai_canfd_generated', None),
+  CAR.KIA_SORENTO_HEV_4TH_GEN: dbc_dict('hyundai_canfd_generated', None),
+  CAR.KONA_EV_2ND_GEN: dbc_dict('hyundai_canfd_generated', None),
+  CAR.KIA_K8_HEV_1ST_GEN: dbc_dict('hyundai_canfd_generated', None),
   CAR.CUSTIN_1ST_GEN: dbc_dict('hyundai_kia_generic', None),
+  CAR.PALISADE_2023: dbc_dict('hyundai_palisade_2023_generated', None),
 }
