@@ -217,8 +217,8 @@ class CarInterface(CarInterfaceBase):
       ret.wheelbase = 2.9
       ret.steerRatio = 16.
       ret.tireStiffnessFactor = 0.65
-    elif candidate == CAR.KIA_SPORTAGE_HYBRID_5TH_GEN:
-      ret.mass = 1767.  # SX Prestige trim support only
+    elif candidate in (CAR.KIA_SPORTAGE_HYBRID_5TH_GEN, CAR.KIA_SPORTAGE_PHEV_5TH_GEN):
+      ret.mass = {CAR.KIA_SPORTAGE_PHEV_5TH_GEN: 1923., }.get(candidate, 1767.)
       ret.wheelbase = 2.756
       ret.steerRatio = 13.6
     elif candidate in (CAR.KIA_SORENTO_4TH_GEN, CAR.KIA_SORENTO_HEV_4TH_GEN, CAR.KIA_SORENTO_PHEV_4TH_GEN):

@@ -27,7 +27,7 @@ class CarControllerParams:
     self.STEER_STEP = 1  # 100 Hz
 
     if CP.carFingerprint in CANFD_CAR:
-      self.STEER_MAX = 270
+      self.STEER_MAX = 170
       self.STEER_DRIVER_ALLOWANCE = 250
       self.STEER_DRIVER_MULTIPLIER = 2
       self.STEER_THRESHOLD = 250
@@ -126,6 +126,7 @@ class CAR(StrEnum):
   KIA_SORENTO_HEV_4TH_GEN = "KIA SORENTO HYBRID 4TH GEN"
   KIA_SORENTO_PHEV_4TH_GEN = "KIA SORENTO PLUG-IN HYBRID 4TH GEN"
   KIA_SPORTAGE_HYBRID_5TH_GEN = "KIA SPORTAGE HYBRID 5TH GEN"
+  KIA_SPORTAGE_PHEV_5TH_GEN = "KIA SPORTAGE PLUG-IN HYBRID 5TH GEN"
   KIA_STINGER = "KIA STINGER GT2 2018"
   KIA_STINGER_2022 = "KIA STINGER 2022"
   KIA_CEED = "KIA CEED INTRO ED 2019"
@@ -272,6 +273,7 @@ CAR_INFO: Dict[str, Optional[Union[HyundaiCarInfo, List[HyundaiCarInfo]]]] = {
   CAR.KIA_SORENTO_HEV_4TH_GEN: HyundaiCarInfo("Kia Sorento Hybrid 2021-23", "All", car_parts=CarParts.common([CarHarness.hyundai_a])),
   CAR.KIA_SORENTO_PHEV_4TH_GEN: HyundaiCarInfo("Kia Sorento Plug-in Hybrid 2022-23", "All", car_parts=CarParts.common([CarHarness.hyundai_a])),
   CAR.KIA_SPORTAGE_HYBRID_5TH_GEN: HyundaiCarInfo("Kia Sportage Hybrid 2023", car_parts=CarParts.common([CarHarness.hyundai_n])),
+  CAR.KIA_SPORTAGE_PHEV_5TH_GEN: HyundaiCarInfo("Kia Sportage Plug-in Hybrid 2023", car_parts=CarParts.common([CarHarness.hyundai_n])),
   CAR.KIA_STINGER: HyundaiCarInfo("Kia Stinger 2018-20", video_link="https://www.youtube.com/watch?v=MJ94qoofYw0",
                                   car_parts=CarParts.common([CarHarness.hyundai_c])),
   CAR.KIA_STINGER_2022: HyundaiCarInfo("Kia Stinger 2022-23", "All", car_parts=CarParts.common([CarHarness.hyundai_k])),
@@ -484,7 +486,7 @@ CANFD_CAR = {CAR.KIA_EV6, CAR.IONIQ_5, CAR.IONIQ_6, CAR.TUCSON_4TH_GEN, CAR.TUCS
              CAR.SANTA_CRUZ_1ST_GEN, CAR.KIA_SPORTAGE_5TH_GEN, CAR.GENESIS_GV70_1ST_GEN, CAR.KIA_SORENTO_PHEV_4TH_GEN,
              CAR.GENESIS_GV60_EV_1ST_GEN, CAR.KIA_SORENTO_4TH_GEN, CAR.KIA_NIRO_HEV_2ND_GEN, CAR.KIA_NIRO_EV_2ND_GEN,
              CAR.GENESIS_GV80, CAR.KIA_CARNIVAL_4TH_GEN, CAR.KIA_SORENTO_HEV_4TH_GEN, CAR.KONA_EV_2ND_GEN, CAR.KIA_K8_HEV_1ST_GEN,
-             CAR.STARIA_4TH_GEN}
+             CAR.STARIA_4TH_GEN, CAR.KIA_SPORTAGE_PHEV_5TH_GEN}
 
 # The radar does SCC on these cars when HDA I, rather than the camera
 CANFD_RADAR_SCC_CAR = {CAR.GENESIS_GV70_1ST_GEN, CAR.KIA_SORENTO_PHEV_4TH_GEN, CAR.KIA_SORENTO_4TH_GEN, CAR.GENESIS_GV80,
@@ -502,7 +504,7 @@ HYBRID_CAR = {CAR.IONIQ_PHEV, CAR.ELANTRA_HEV_2021, CAR.KIA_NIRO_PHEV, CAR.KIA_N
               CAR.IONIQ_HEV_2022, CAR.SANTA_FE_HEV_2022, CAR.SANTA_FE_PHEV_2022, CAR.IONIQ_PHEV_2019, CAR.TUCSON_HYBRID_4TH_GEN,
               CAR.KIA_SPORTAGE_HYBRID_5TH_GEN, CAR.KIA_SORENTO_PHEV_4TH_GEN, CAR.KIA_K5_HEV_2020, CAR.KIA_NIRO_HEV_2ND_GEN,
               CAR.KIA_SORENTO_HEV_4TH_GEN, CAR.KIA_OPTIMA_H, CAR.KIA_OPTIMA_H_G4_FL, CAR.KIA_K8_HEV_1ST_GEN,
-              CAR.AZERA_HEV_6TH_GEN, CAR.KIA_NIRO_PHEV_2022}
+              CAR.AZERA_HEV_6TH_GEN, CAR.KIA_NIRO_PHEV_2022, CAR.KIA_SPORTAGE_PHEV_5TH_GEN}
 
 EV_CAR = {CAR.IONIQ_EV_2020, CAR.IONIQ_EV_LTD, CAR.KONA_EV, CAR.KIA_NIRO_EV, CAR.KIA_NIRO_EV_2ND_GEN, CAR.KONA_EV_2022,
           CAR.KIA_EV6, CAR.IONIQ_5, CAR.IONIQ_6, CAR.GENESIS_GV60_EV_1ST_GEN, CAR.KONA_EV_2ND_GEN}
@@ -573,6 +575,7 @@ DBC = {
   CAR.SANTA_CRUZ_1ST_GEN: dbc_dict('hyundai_canfd', None),
   CAR.KIA_SPORTAGE_5TH_GEN: dbc_dict('hyundai_canfd', None),
   CAR.KIA_SPORTAGE_HYBRID_5TH_GEN: dbc_dict('hyundai_canfd', None),
+  CAR.KIA_SPORTAGE_PHEV_5TH_GEN: dbc_dict('hyundai_canfd', None),
   CAR.GENESIS_GV70_1ST_GEN: dbc_dict('hyundai_canfd', None),
   CAR.KIA_SORENTO_PHEV_4TH_GEN: dbc_dict('hyundai_canfd', None),
   CAR.GENESIS_GV60_EV_1ST_GEN: dbc_dict('hyundai_canfd', None),
