@@ -1,13 +1,14 @@
 from collections import namedtuple
 
 from cereal import car
+from common.conversions import Conversions as CV
 from openpilot.common.numpy_fast import clip, interp
 from openpilot.common.realtime import DT_CTRL
 from opendbc.can.packer import CANPacker
 from openpilot.selfdrive.car import create_gas_interceptor_command
 from openpilot.selfdrive.car.honda import hondacan
 from openpilot.selfdrive.car.honda.values import CruiseButtons, VISUAL_HUD, HONDA_BOSCH, HONDA_BOSCH_RADARLESS, HONDA_NIDEC_ALT_PCM_ACCEL, CarControllerParams
-from openpilot.selfdrive.controls.lib.drive_helpers import rate_limit
+from openpilot.selfdrive.controls.lib.drive_helpers import IMPERIAL_INCREMENT, rate_limit
 
 VisualAlert = car.CarControl.HUDControl.VisualAlert
 LongCtrlState = car.CarControl.Actuators.LongControlState
@@ -74,6 +75,13 @@ def brake_pump_hysteresis(apply_brake, apply_brake_last, last_pump_ts, ts):
     pump_on = True
 
   return pump_on, last_pump_ts
+
+
+def round_hud_set_speed(v_cruise_kph, is_metric):
+  if not is_metric:
+    v_cruise_kph = v_cruise_kph / 1.00584
+    v_cruise_kph = round(v_cruise_kph / IMPERIAL_INCREMENT) * IMPERIAL_INCREMENT * 1.001
+  return round(v_cruise_kph)
 
 
 def process_hud_alert(hud_alert):
@@ -248,7 +256,7 @@ class CarController:
 
     # Send dashboard UI commands.
     if self.frame % 10 == 0:
-      hud = HUDData(int(pcm_accel), int(round(hud_v_cruise)), hud_control.leadVisible,
+      hud = HUDData(int(pcm_accel), round_hud_set_speed(hud_v_cruise, CS.is_metric), hud_control.leadVisible,
                     hud_control.lanesVisible, fcw_display, acc_alert, steer_required)
       can_sends.extend(hondacan.create_ui_commands(self.packer, self.CP, CC.enabled, pcm_speed, hud, CS.is_metric, CS.acc_hud, CS.lkas_hud))
 
