@@ -134,6 +134,7 @@ class CAR(StrEnum):
   GENESIS_GV60_EV_1ST_GEN = "GENESIS GV60 ELECTRIC 1ST GEN"
   GENESIS_G70 = "GENESIS G70 2018"
   GENESIS_G70_2020 = "GENESIS G70 2020"
+  GENESIS_G70_1ST_GEN_FL = "GENESIS G70 1ST GEN FACELIFT"
   GENESIS_GV70_1ST_GEN = "GENESIS GV70 1ST GEN"
   GENESIS_G80 = "GENESIS G80 2017"
   GENESIS_G90 = "GENESIS G90 2017"
@@ -298,6 +299,7 @@ CAR_INFO: dict[str, HyundaiCarInfo | list[HyundaiCarInfo] | None] = {
   ],
   CAR.GENESIS_G70: HyundaiCarInfo("Genesis G70 2018-19", "All", car_parts=CarParts.common([CarHarness.hyundai_f])),
   CAR.GENESIS_G70_2020: HyundaiCarInfo("Genesis G70 2020", "All", car_parts=CarParts.common([CarHarness.hyundai_f])),
+  CAR.GENESIS_G70_1ST_GEN_FL: HyundaiCarInfo("Genesis G70 2024", "All", car_parts=CarParts.common([CarHarness.hyundai_l])),
   CAR.GENESIS_GV70_1ST_GEN: [
     HyundaiCarInfo("Genesis GV70 (2.5T Trim) 2022-23", "All", car_parts=CarParts.common([CarHarness.hyundai_l])),
     HyundaiCarInfo("Genesis GV70 (3.5T Trim) 2022-23", "All", car_parts=CarParts.common([CarHarness.hyundai_m])),
@@ -522,7 +524,7 @@ FW_QUERY_CONFIG = FwQueryConfig(
 CHECKSUM = {
   "crc8": [CAR.SANTA_FE, CAR.SONATA, CAR.PALISADE, CAR.KIA_SELTOS, CAR.ELANTRA_2021, CAR.ELANTRA_HEV_2021,
            CAR.SONATA_HYBRID, CAR.SANTA_FE_2022, CAR.KIA_K5_2021, CAR.SANTA_FE_HEV_2022, CAR.SANTA_FE_PHEV_2022,
-           CAR.KIA_K5_HEV_2020, CAR.CUSTIN_1ST_GEN],
+           CAR.KIA_K5_HEV_2020, CAR.CUSTIN_1ST_GEN, CAR.GENESIS_G70_1ST_GEN_FL],
   "6B": [CAR.KIA_SORENTO, CAR.HYUNDAI_GENESIS],
 }
 
@@ -545,7 +547,7 @@ CANFD_RADAR_SCC_CAR = {CAR.GENESIS_GV70_1ST_GEN, CAR.KIA_SORENTO_4TH_GEN, CAR.GE
 CANFD_UNSUPPORTED_LONGITUDINAL_CAR = {CAR.IONIQ_6, CAR.KONA_EV_2ND_GEN}
 
 # The camera does SCC on these cars, rather than the radar
-CAMERA_SCC_CAR = {CAR.KONA_EV_2022, }
+CAMERA_SCC_CAR = {CAR.KONA_EV_2022, CAR.GENESIS_G70_1ST_GEN_FL}
 
 # these cars use a different gas signal
 HYBRID_CAR = {CAR.IONIQ_PHEV, CAR.ELANTRA_HEV_2021, CAR.KIA_NIRO_PHEV, CAR.KIA_NIRO_HEV_2021, CAR.SONATA_HYBRID, CAR.KONA_HEV, CAR.IONIQ,
@@ -632,4 +634,5 @@ DBC = {
   CAR.CUSTIN_1ST_GEN: dbc_dict('hyundai_kia_generic', None),
   CAR.KIA_NIRO_PHEV_2022: dbc_dict('hyundai_kia_generic', 'hyundai_kia_mando_front_radar_generated'),
   CAR.STARIA_4TH_GEN: dbc_dict('hyundai_canfd', None),
+  CAR.GENESIS_G70_1ST_GEN_FL: dbc_dict('hyundai_kia_generic', None),
 }

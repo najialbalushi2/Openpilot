@@ -265,6 +265,10 @@ class CarInterface(CarInterfaceBase):
       ret.mass = 2258.
       ret.wheelbase = 2.95
       ret.steerRatio = 14.14
+    elif candidate == CAR.GENESIS_G70_1ST_GEN_FL:
+      ret.mass = 1769.
+      ret.wheelbase = 2.83
+      ret.steerRatio = 12.9  # guesstimate from G70 1st Gen platform
 
     # *** longitudinal control ***
     if candidate in CANFD_CAR:
@@ -323,7 +327,7 @@ class CarInterface(CarInterfaceBase):
     elif ret.flags & HyundaiFlags.EV:
       ret.safetyConfigs[-1].safetyParam |= Panda.FLAG_HYUNDAI_EV_GAS
 
-    if candidate in (CAR.KONA, CAR.KONA_EV, CAR.KONA_HEV, CAR.KONA_EV_2022):
+    if candidate in (CAR.KONA, CAR.KONA_EV, CAR.KONA_HEV, CAR.KONA_EV_2022, CAR.GENESIS_G70_1ST_GEN_FL):
       ret.flags |= HyundaiFlags.ALT_LIMITS.value
       ret.safetyConfigs[-1].safetyParam |= Panda.FLAG_HYUNDAI_ALT_LIMITS
 
