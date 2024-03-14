@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 from cereal import car
+from openpilot.common.conversions import Conversions as CV
 from openpilot.selfdrive.car import dbc_dict, PlatformConfig, DbcDict, Platforms, CarSpecs
 from openpilot.selfdrive.car.docs_definitions import CarFootnote, CarHarness, CarInfo, CarParts, Column
 from openpilot.selfdrive.car.fw_query_definitions import FwQueryConfig, Request, StdQueries
@@ -79,46 +80,53 @@ class GMCarInfo(CarInfo):
       self.footnotes.append(Footnote.OBD_II)
 
 
-@dataclass(frozen=True, kw_only=True)
-class GMCarSpecs(CarSpecs):
-  tireStiffnessFactor: float = 0.444  # not optimized yet
-
-
 @dataclass
 class GMPlatformConfig(PlatformConfig):
   dbc_dict: DbcDict = field(default_factory=lambda: dbc_dict('gm_global_a_powertrain_generated', 'gm_global_a_object', chassis_dbc='gm_global_a_chassis'))
+
+
+@dataclass(frozen=True, kw_only=True)
+class GMCarSpecs(CarSpecs):
+  tireStiffnessFactor: float = 0.444  # not optimized yet
+  steerActuatorDelay: float = 0.1
+  minEnableSpeed: float = 5 * CV.KPH_TO_MS
+  minSteerSpeed: float = 10 * CV.KPH_TO_MS
 
 
 class CAR(Platforms):
   HOLDEN_ASTRA = GMPlatformConfig(
     "HOLDEN ASTRA RS-V BK 2017",
     GMCarInfo("Holden Astra 2017"),
-    GMCarSpecs(mass=1363, wheelbase=2.662, steerRatio=15.7, centerToFrontRatio=0.4),
+    GMCarSpecs(mass=1363, wheelbase=2.662, steerRatio=15.7, centerToFrontRatio=0.4, minEnableSpeed=18 * CV.MPH_TO_MS, minSteerSpeed=7 * CV.MPH_TO_MS),
   )
   VOLT = GMPlatformConfig(
     "CHEVROLET VOLT PREMIER 2017",
     GMCarInfo("Chevrolet Volt 2017-18", min_enable_speed=0, video_link="https://youtu.be/QeMCN_4TFfQ"),
-    GMCarSpecs(mass=1607, wheelbase=2.69, steerRatio=17.7, centerToFrontRatio=0.45, tireStiffnessFactor=0.469),
+    GMCarSpecs(mass=1607, wheelbase=2.69, steerRatio=17.7, centerToFrontRatio=0.45,
+               tireStiffnessFactor=0.469,  # Stock Michelin Energy Saver A/S, LiveParameters
+               steerActuatorDelay=0.2, minEnableSpeed=18 * CV.MPH_TO_MS,  # supports stop and go, but initial engage must (conservatively) be above 18mph
+               minSteerSpeed=7 * CV.MPH_TO_MS),
   )
   CADILLAC_ATS = GMPlatformConfig(
     "CADILLAC ATS Premium Performance 2018",
     GMCarInfo("Cadillac ATS Premium Performance 2018"),
-    GMCarSpecs(mass=1601, wheelbase=2.78, steerRatio=15.3),
+    GMCarSpecs(mass=1601, wheelbase=2.78, steerRatio=15.3, minEnableSpeed=18 * CV.MPH_TO_MS, minSteerSpeed=7 * CV.MPH_TO_MS),
   )
   MALIBU = GMPlatformConfig(
     "CHEVROLET MALIBU PREMIER 2017",
     GMCarInfo("Chevrolet Malibu Premier 2017"),
-    GMCarSpecs(mass=1496, wheelbase=2.83, steerRatio=15.8, centerToFrontRatio=0.4),
+    GMCarSpecs(mass=1496, wheelbase=2.83, steerRatio=15.8, centerToFrontRatio=0.4, minEnableSpeed=18 * CV.MPH_TO_MS, minSteerSpeed=7 * CV.MPH_TO_MS),
   )
   ACADIA = GMPlatformConfig(
     "GMC ACADIA DENALI 2018",
     GMCarInfo("GMC Acadia 2018", video_link="https://www.youtube.com/watch?v=0ZN6DdsBUZo"),
-    GMCarSpecs(mass=1975, wheelbase=2.86, steerRatio=14.4, centerToFrontRatio=0.4),
+    GMCarSpecs(mass=1975, wheelbase=2.86, steerRatio=14.4, centerToFrontRatio=0.4, minEnableSpeed=-1.0,  # engage speed is decided by pcm
+               steerActuatorDelay=0.2, minSteerSpeed=7 * CV.MPH_TO_MS),
   )
   BUICK_LACROSSE = GMPlatformConfig(
     "BUICK LACROSSE 2017",
     GMCarInfo("Buick LaCrosse 2017-19", "Driver Confidence Package 2"),
-    GMCarSpecs(mass=1712, wheelbase=2.91, steerRatio=15.8, centerToFrontRatio=0.4),
+    GMCarSpecs(mass=1712, wheelbase=2.91, steerRatio=15.8, centerToFrontRatio=0.4, minEnableSpeed=18 * CV.MPH_TO_MS, minSteerSpeed=7 * CV.MPH_TO_MS),
   )
   BUICK_REGAL = GMPlatformConfig(
     "BUICK REGAL ESSENCE 2018",
@@ -128,17 +136,19 @@ class CAR(Platforms):
   ESCALADE = GMPlatformConfig(
     "CADILLAC ESCALADE 2017",
     GMCarInfo("Cadillac Escalade 2017", "Driver Assist Package"),
-    GMCarSpecs(mass=2564, wheelbase=2.95, steerRatio=17.3),
+    GMCarSpecs(mass=2564, wheelbase=2.95, steerRatio=17.3, minEnableSpeed=-1.0,  # engage speed is decided by pcm
+               minSteerSpeed=7 * CV.MPH_TO_MS),
   )
   ESCALADE_ESV = GMPlatformConfig(
     "CADILLAC ESCALADE ESV 2016",
     GMCarInfo("Cadillac Escalade ESV 2016", "Adaptive Cruise Control (ACC) & LKAS"),
-    GMCarSpecs(mass=2739, wheelbase=3.302, steerRatio=17.3, tireStiffnessFactor=1.0),
+    GMCarSpecs(mass=2739, wheelbase=3.302, steerRatio=17.3, minEnableSpeed=-1.0,  # engage speed is decided by pcm
+               tireStiffnessFactor=1.0, minSteerSpeed=7 * CV.MPH_TO_MS),
   )
   ESCALADE_ESV_2019 = GMPlatformConfig(
     "CADILLAC ESCALADE ESV 2019",
     GMCarInfo("Cadillac Escalade ESV 2019", "Adaptive Cruise Control (ACC) & LKAS"),
-    ESCALADE_ESV.specs,
+    ESCALADE_ESV.specs.override(steerActuatorDelay=0.2),
   )
   BOLT_EUV = GMPlatformConfig(
     "CHEVROLET BOLT EUV 2022",
@@ -146,7 +156,7 @@ class CAR(Platforms):
       GMCarInfo("Chevrolet Bolt EUV 2022-23", "Premier or Premier Redline Trim without Super Cruise Package", video_link="https://youtu.be/xvwzGMUA210"),
       GMCarInfo("Chevrolet Bolt EV 2022-23", "2LT Trim with Adaptive Cruise Control Package"),
     ],
-    GMCarSpecs(mass=1669, wheelbase=2.63779, steerRatio=16.8, centerToFrontRatio=0.4, tireStiffnessFactor=1.0),
+    GMCarSpecs(mass=1669, wheelbase=2.63779, steerRatio=16.8, centerToFrontRatio=0.4, tireStiffnessFactor=1.0, steerActuatorDelay=0.2),
   )
   SILVERADO = GMPlatformConfig(
     "CHEVROLET SILVERADO 1500 2020",
@@ -164,7 +174,7 @@ class CAR(Platforms):
   TRAILBLAZER = GMPlatformConfig(
     "CHEVROLET TRAILBLAZER 2021",
     GMCarInfo("Chevrolet Trailblazer 2021-22"),
-    GMCarSpecs(mass=1345, wheelbase=2.64, steerRatio=16.8, centerToFrontRatio=0.4, tireStiffnessFactor=1.0),
+    GMCarSpecs(mass=1345, wheelbase=2.64, steerRatio=16.8, centerToFrontRatio=0.4, tireStiffnessFactor=1.0, steerActuatorDelay=0.2),
   )
 
 
