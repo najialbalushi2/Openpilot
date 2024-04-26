@@ -5,6 +5,8 @@ Version 0.9.7 (2024-05-XX)
 * Support for hybrid variants of supported Ford models
 * Added toggle to enable driver monitoring even when openpilot is not engaged
 * Fingerprinting without the OBD-II port on all cars
+* Hyundai Palisade (with HDA II) 2023-24 support thanks to sunnyhaibin!
+* Kia Telluride (with HDA II) 2023-24 support thanks to sunnyhaibin!
 
 Version 0.9.6 (2024-02-27)
 ========================
