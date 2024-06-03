@@ -5,8 +5,8 @@ from enum import Enum, IntFlag
 from cereal import car
 from panda.python import uds
 from openpilot.common.conversions import Conversions as CV
-from openpilot.selfdrive.car import CarSpecs, DbcDict, PlatformConfig, Platforms, dbc_dict
-from openpilot.selfdrive.car.docs_definitions import CarFootnote, CarHarness, CarDocs, CarParts, Column
+from openpilot.selfdrive.car import CarSpecs, DbcDict, PlatformConfig, dbc_dict, Platforms, AngleRateLimit
+from openpilot.selfdrive.car.docs_definitions import CarFootnote, CarHarness, CarDocs, CarParts, Column, Mount
 from openpilot.selfdrive.car.fw_query_definitions import FwQueryConfig, Request, p16
 
 Ecu = car.CarParams.Ecu
@@ -15,6 +15,10 @@ Ecu = car.CarParams.Ecu
 class CarControllerParams:
   ACCEL_MIN = -3.5 # m/s
   ACCEL_MAX = 2.0 # m/s
+
+  # seen changing at 0.2 deg/frame down, 0.1 deg/frame up at 100Hz
+  ANGLE_RATE_LIMIT_UP = AngleRateLimit(speed_bp=[0., 5., 15.], angle_v=[5., .8, .15])
+  ANGLE_RATE_LIMIT_DOWN = AngleRateLimit(speed_bp=[0., 5., 15.], angle_v=[5., 3.5, 0.4])
 
   def __init__(self, CP):
     self.STEER_DELTA_UP = 3
@@ -492,6 +496,13 @@ class CAR(Platforms):
     ],
     CarSpecs(mass=2087, wheelbase=3.09, steerRatio=14.23),
     flags=HyundaiFlags.RADAR_SCC,
+  )
+  KIA_EV9 = HyundaiCanFDPlatformConfig(
+    [
+      HyundaiCarDocs("Kia EV9 2024", car_parts=CarParts.common([CarHarness.hyundai_r, Mount.angled_mount_8_degrees]))
+    ],
+    CarSpecs(mass=2625, wheelbase=3.1, steerRatio=16.02),
+    flags=HyundaiFlags.EV,
   )
 
   # Genesis
