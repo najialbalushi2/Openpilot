@@ -102,6 +102,7 @@ class RouteEngine:
       r = resp.json()
       cloudlog.warning(r)
       if len(r["features"]):
+        self.timezone = r["features"][0]["properties"]["TZID"]
         self.params.put_nonblocking("Timezone", r["features"][0]["properties"]["TZID"])
 
     except requests.exceptions.RequestException:
