@@ -134,7 +134,6 @@ casadi = "*"
 future-fstrings = "*"
 
 # these should be removed
-markdown-it-py = "*"
 psutil = "*"
 setproctitle = "*"
 pycryptodome = "*"  # used in updated/casync, panda, body, and a test
