@@ -31,9 +31,9 @@ void MapETA::paintEvent(QPaintEvent *event) {
 
 void MapETA::updateETA(float s, float s_typical, float d) {
   // ETA
-  auto currentTime = QDateTime::currentDateTime();
+  QDateTime currentTime = QDateTime::currentDateTime();
   currentTime.setTimeZone(QTimeZone(param.get("Timezone").c_str()));
-  auto eta_t = currentTime.addSecs(s).time();
+  QTime eta_t = currentTime.addSecs(s).time();
   auto eta = format_24h ? std::pair{eta_t.toString("HH:mm"), tr("eta")}
                         : std::pair{eta_t.toString("h:mm a").split(' ')[0], eta_t.toString("a")};
 
