@@ -29,9 +29,10 @@ class RouteEngine:
 
     self.params = Params()
 
-    # Get last gps position from params
+    # Get last gps position & timezone from params
     self.last_position = coordinate_from_param("LastGPSPosition", self.params)
     self.last_bearing = None
+    self.timezone = self.params.get("Timezone", encoding='utf8')
 
     self.gps_ok = False
     self.localizer_valid = False
@@ -85,7 +86,7 @@ class RouteEngine:
     if self.localizer_valid:
       self.last_bearing = math.degrees(location.calibratedOrientationNED.value[2])
       self.last_position = Coordinate(location.positionGeodetic.value[0], location.positionGeodetic.value[1])
-      if self.params.get("Timezone", encoding='utf8') is None:
+      if self.timezone is None:
         self.update_timezone(self)
 
   def update_timezone(self):
