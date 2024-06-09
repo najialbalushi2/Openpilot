@@ -120,21 +120,6 @@ def coordinate_from_param(param: str, params: Params = None) -> Coordinate | Non
 
   return Coordinate(pos['latitude'], pos['longitude'])
 
-def timezone_from_param(param: str, params: Params = None) -> str | None:
-  if params is None:
-    params = Params()
-
-  json_str = params.get(param)
-  if json_str is None:
-    return None
-
-  tz = json.loads(json_str)
-  if tz is None:
-    return None
-
-  return str(tz)
-
-
 def string_to_direction(direction: str) -> str:
   for d in DIRECTIONS:
     if d in direction:

@@ -3,7 +3,7 @@
 #include <QDateTime>
 #include <QPainter>
 #include <string>
-
+ #include <QTimeZone>
 #include "selfdrive/ui/qt/maps/map_helpers.h"
 #include "selfdrive/ui/ui.h"
 
@@ -29,10 +29,11 @@ void MapETA::paintEvent(QPaintEvent *event) {
   }
 }
 
-void MapETA::updateETA(float s, float s_typical, float d, string timezone) {
+void MapETA::updateETA(float s, float s_typical, float d) {
   // ETA
-  QByteArray tz(timezone);
-  auto eta_t = QDateTime::currentDateTime(tz).addSecs(s).time();
+  auto currentTime = QDateTime::currentDateTime();
+  currentTime.setTimeZone(QTimeZone(param.get("Timezone").c_str()));
+  auto eta_t = currentTime.addSecs(s).time();
   auto eta = format_24h ? std::pair{eta_t.toString("HH:mm"), tr("eta")}
                         : std::pair{eta_t.toString("h:mm a").split(' ')[0], eta_t.toString("a")};
 

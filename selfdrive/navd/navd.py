@@ -12,7 +12,6 @@ from openpilot.common.api import Api
 from openpilot.common.params import Params
 from openpilot.common.realtime import Ratekeeper
 from openpilot.selfdrive.navd.helpers import (Coordinate, coordinate_from_param,
-                                    timezone_from_param,
                                     distance_along_geometry, maxspeed_to_ms,
                                     minimum_distance,
                                     parse_banner_instructions)
@@ -30,9 +29,8 @@ class RouteEngine:
 
     self.params = Params()
 
-    # Get last gps position & timezone from params
+    # Get last gps position from params
     self.last_position = coordinate_from_param("LastGPSPosition", self.params)
-    self.timezone = timezone_from_param("Timezone", self.params)
     self.last_bearing = None
 
     self.gps_ok = False
@@ -102,8 +100,7 @@ class RouteEngine:
       r = resp.json()
       cloudlog.warning(r)
       if len(r["features"]):
-        self.timezone = r["features"][0]["properties"]["TZID"]
-        self.params.put_nonblocking("Timezone", self.timezone)
+        self.params.put_nonblocking("Timezone", r["features"][0]["properties"]["TZID"])
 
     except requests.exceptions.RequestException:
       cloudlog.exception("failed to get timezone")
