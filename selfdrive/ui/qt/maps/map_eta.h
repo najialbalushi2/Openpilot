@@ -3,6 +3,8 @@
 #include <QPaintEvent>
 #include <QTextDocument>
 #include <QWidget>
+#include <QTimeZone>
+
 
 #include "common/params.h"
 
@@ -19,5 +21,7 @@ private:
 
   bool format_24h = false;
   QTextDocument eta_doc;
+  QTimeZone timezone;
+
   Params param;
 };
