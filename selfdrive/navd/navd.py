@@ -12,6 +12,7 @@ from openpilot.common.api import Api
 from openpilot.common.params import Params
 from openpilot.common.realtime import Ratekeeper
 from openpilot.selfdrive.navd.helpers import (Coordinate, coordinate_from_param,
+                                    timezone_from_param,
                                     distance_along_geometry, maxspeed_to_ms,
                                     minimum_distance,
                                     parse_banner_instructions)
@@ -29,13 +30,13 @@ class RouteEngine:
 
     self.params = Params()
 
-    # Get last gps position from params
+    # Get last gps position & timezone from params
     self.last_position = coordinate_from_param("LastGPSPosition", self.params)
+    self.timezone = timezone_from_param("Timezone", self.params)
     self.last_bearing = None
 
     self.gps_ok = False
     self.localizer_valid = False
-    self.timezone = False
 
     self.nav_destination = None
     self.step_idx = None
@@ -86,6 +87,26 @@ class RouteEngine:
     if self.localizer_valid:
       self.last_bearing = math.degrees(location.calibratedOrientationNED.value[2])
       self.last_position = Coordinate(location.positionGeodetic.value[0], location.positionGeodetic.value[1])
+      self.update_timezone(self)
+
+  def update_timezone(self):
+    # getting timezone through mapbox api
+    coords_tz_str = f'{self.last_position.longitude},{self.last_position.longitude}'
+    urltz = self.mapbox_host + '/v4/examples.4ze9z6tv/tilequery/' + coords_tz_str + ".json"
+    try:
+      resp = requests.get(urltz, params={"access_token" : self.mapbox_token}, timeout=10)
+      if resp.status_code != 200:
+        cloudlog.event("API request failed", status_code=resp.status_code, text=resp.text, error=True)
+      resp.raise_for_status()
+
+      r = resp.json()
+      cloudlog.warning(r)
+      if len(r["features"]):
+        self.timezone = r["features"][0]["properties"]["TZID"]
+        self.params.put_nonblocking("Timezone", self.timezone)
+
+    except requests.exceptions.RequestException:
+      cloudlog.exception("failed to get timezone")
 
   def recompute_route(self):
     if self.last_position is None:
@@ -199,21 +220,6 @@ class RouteEngine:
     except requests.exceptions.RequestException:
       cloudlog.exception("failed to get route")
       self.clear_route()
-
-    # getting timezone through mapbox api
-    url = self.mapbox_host + '/v5/examples.4ze9z6tv/tilequery/' + coords_str
-    try:
-      resp = requests.get(url, params={"access_token" : token}, timeout=10)
-      if resp.status_code != 200:
-        cloudlog.event("API request failed", status_code=resp.status_code, text=resp.text, error=True)
-      resp.raise_for_status()
-
-      r = resp.json()
-      if len(r["features"]):
-        self.timezone = r["features"][0]["properties"]["TZID"]
-
-    except requests.exceptions.RequestException:
-      cloudlog.exception("failed to get timezone")
 
     self.send_route()
 
@@ -329,7 +335,6 @@ class RouteEngine:
 
     msg = messaging.new_message('navRoute', valid=True)
     msg.navRoute.coordinates = coords
-    msg.navRoute.timezone = self.timezone
     self.pm.send('navRoute', msg)
 
   def clear_route(self):
