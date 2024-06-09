@@ -120,6 +120,7 @@ def coordinate_from_param(param: str, params: Params = None) -> Coordinate | Non
 
   return Coordinate(pos['latitude'], pos['longitude'])
 
+
 def string_to_direction(direction: str) -> str:
   for d in DIRECTIONS:
     if d in direction:

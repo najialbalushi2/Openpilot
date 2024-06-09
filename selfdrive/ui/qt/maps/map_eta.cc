@@ -2,8 +2,8 @@
 
 #include <QDateTime>
 #include <QPainter>
-#include <string>
- #include <QTimeZone>
+#include <QTimeZone>
+
 #include "selfdrive/ui/qt/maps/map_helpers.h"
 #include "selfdrive/ui/ui.h"
 
