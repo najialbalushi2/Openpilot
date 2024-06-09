@@ -203,7 +203,7 @@ class RouteEngine:
     # getting timezone through mapbox api
     url = self.mapbox_host + '/v5/examples.4ze9z6tv/tilequery/' + coords_str
     try:
-      resp = requests.get(url, params=params['access_token'], timeout=10)
+      resp = requests.get(url, params={"access_token" : token}, timeout=10)
       if resp.status_code != 200:
         cloudlog.event("API request failed", status_code=resp.status_code, text=resp.text, error=True)
       resp.raise_for_status()
