@@ -170,7 +170,7 @@ void can_send(std::vector<Panda *> &pandas, bool fake_send) {
 
   const bool non_blocking = true;
 
-  // run as fast as messages come in
+  // Drain sendcan socket and relay messages to Pandas
   while (!do_exit && check_all_connected(pandas)) {
     std::unique_ptr<Message> msg(subscriber->receive(non_blocking));
     if (!msg) {
