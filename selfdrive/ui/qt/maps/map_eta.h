@@ -21,6 +21,5 @@ private:
 
   bool format_24h = false;
   QTextDocument eta_doc;
-
   Params param;
 };
