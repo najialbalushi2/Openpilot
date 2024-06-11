@@ -32,7 +32,9 @@ class RouteEngine:
     # Get last gps position & timezone from params
     self.last_position = coordinate_from_param("LastGPSPosition", self.params)
     self.last_bearing = None
-    self.timezone = self.params.get("Timezone", encoding='utf8')
+    self.timezone = None
+    self.timezone_backoff = 0
+    self.timezone_counter = 0
 
     self.gps_ok = False
     self.localizer_valid = False
@@ -87,7 +89,8 @@ class RouteEngine:
       self.last_bearing = math.degrees(location.calibratedOrientationNED.value[2])
       self.last_position = Coordinate(location.positionGeodetic.value[0], location.positionGeodetic.value[1])
       if self.timezone is None:
-        self.update_timezone(self)
+        cloudlog.warning("updating timezone every 10 minutes")
+        threading.Timer(self.timezone_backoff, self.update_timezone).start()
 
   def update_timezone(self):
     # getting timezone through mapbox api
@@ -100,13 +103,18 @@ class RouteEngine:
       resp.raise_for_status()
 
       r = resp.json()
-      cloudlog.warning(r)
       if len(r["features"]):
         self.timezone = r["features"][0]["properties"]["TZID"]
-        self.params.put_nonblocking("Timezone", r["features"][0]["properties"]["TZID"])
 
     except requests.exceptions.RequestException:
       cloudlog.exception("failed to get timezone")
+      if self.timezone_counter != 8:
+        self.timezone_counter += 1
+        self.timezone_backoff = 2**self.timezone_counter
+        return
+
+    self.timezone_backoff = 600
+    self.timezone_counter = 0
 
   def recompute_route(self):
     if self.last_position is None:
@@ -335,6 +343,7 @@ class RouteEngine:
 
     msg = messaging.new_message('navRoute', valid=True)
     msg.navRoute.coordinates = coords
+    msg.navRoute.timezone = self.timezone
     self.pm.send('navRoute', msg)
 
   def clear_route(self):

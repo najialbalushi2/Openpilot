@@ -11,7 +11,6 @@ const float MANEUVER_TRANSITION_THRESHOLD = 10;
 MapETA::MapETA(QWidget *parent) : QWidget(parent) {
   setVisible(false);
   setAttribute(Qt::WA_TranslucentBackground);
-  timezone = QTimeZone(param.get("Timezone").c_str());
   eta_doc.setUndoRedoEnabled(false);
   eta_doc.setDefaultStyleSheet("body {font-family:Inter;font-size:70px;color:white;} b{font-weight:600;} td{padding:0 3px;}");
 }
@@ -29,10 +28,11 @@ void MapETA::paintEvent(QPaintEvent *event) {
   }
 }
 
-void MapETA::updateETA(float s, float s_typical, float d) {
+void MapETA::updateETA(float s, float s_typical, float d, std::string tz) {
   // ETA
   QDateTime currentTime = QDateTime::currentDateTime();
-  currentTime.setTimeZone(timezone);
+  QTimeZone tzone(tz.c_str());
+  currentTime.setTimeZone(tzone);
   QTime eta_t = currentTime.addSecs(s).time();
   auto eta = format_24h ? std::pair{eta_t.toString("HH:mm"), tr("eta")}
                         : std::pair{eta_t.toString("h:mm a").split(' ')[0], eta_t.toString("a")};
