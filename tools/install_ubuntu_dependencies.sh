@@ -14,6 +14,7 @@ fi
 
 # Install common packages
 function install_ubuntu_common_requirements() {
+  echo "Installing common packages..."
   $SUDO apt-get update
   $SUDO apt-get install -y --no-install-recommends \
     ca-certificates \
@@ -83,10 +84,17 @@ function install_extra_packages() {
     locales
 }
 
+function install_tools() {
+  echo "Installing development tools..."
+  # TODO: Add other packages
+  $SUDO apt-get install -y --no-install-recommends valgrind
+}
+
 # Install Ubuntu 24.04 LTS packages
 function install_ubuntu_lts_latest_requirements() {
   install_ubuntu_common_requirements
 
+  echo "Installing Ubuntu LTS requirements..."
   $SUDO apt-get install -y --no-install-recommends \
     g++-12 \
     qtbase5-dev \
@@ -100,47 +108,66 @@ function install_ubuntu_lts_latest_requirements() {
 function install_ubuntu_focal_requirements() {
   install_ubuntu_common_requirements
 
+  echo "Installing Ubuntu Focal requirements..."
   $SUDO apt-get install -y --no-install-recommends \
     libavresample-dev \
     qt5-default \
     python-dev
 }
 
+function ask() {
+  read -p "$1 [Y/n] " -n 1 -r
+  echo ""
+  # In bash 0 is true, 1 is false.
+  [[ $REPLY =~ ^[Yy]$ ]] && return 0 || return 1
+}
+
 # Detect OS using /etc/os-release file
 if [ -f "/etc/os-release" ]; then
   source /etc/os-release
-  case "$VERSION_CODENAME" in
-    "jammy" | "kinetic" | "noble")
-      install_ubuntu_lts_latest_requirements
-      ;;
-    "focal")
-      install_ubuntu_focal_requirements
-      ;;
-    *)
-      echo "$ID $VERSION_ID is unsupported. This setup script is written for Ubuntu 20.04."
-      read -p "Would you like to attempt installation anyway? " -n 1 -r
-      echo ""
-      if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        exit 1
-      fi
-      if [ "$UBUNTU_CODENAME" = "focal" ]; then
-        install_ubuntu_focal_requirements
-      else
+
+  if [[ -z "$INSTALL_BASE_PACKAGES" ]]; then
+    if ask "Do you want to install runtime dependencies?"; then
+      INSTALL_BASE_PACKAGES="yes"
+    fi
+  fi
+
+  if [[ "$INSTALL_BASE_PACKAGES" == "yes" ]]; then
+    case "$VERSION_CODENAME" in
+      "jammy" | "kinetic" | "noble")
         install_ubuntu_lts_latest_requirements
-      fi
-  esac
+        ;;
+      "focal")
+        install_ubuntu_focal_requirements
+        ;;
+      *)
+        echo "$ID $VERSION_ID is unsupported. This setup script is written for Ubuntu 20.04."
+        if ! ask "Would you like to attempt installation anyway?"; then
+          exit 1
+        fi
+          if [ "$UBUNTU_CODENAME" = "focal" ]; then
+          install_ubuntu_focal_requirements
+          else
+          install_ubuntu_lts_latest_requirements
+        fi
+    esac
+    echo "Base setup done."
+  fi
 
   # Install extra packages
   if [[ -z "$INSTALL_EXTRA_PACKAGES" ]]; then
-    read -p "Base setup done. Do you want to install extra development packages? [Y/n]: " -n 1 -r
-    echo ""
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
+    if ask "Do you want to install extra development packages?"; then
       INSTALL_EXTRA_PACKAGES="yes"
     fi
   fi
   if [[ "$INSTALL_EXTRA_PACKAGES" == "yes" ]]; then
     install_extra_packages
   fi
+
+  if ask "Do you want to install extra development tools?"; then
+    install_tools
+  fi
+
 else
   echo "No /etc/os-release in the system. Make sure you're running on Ubuntu, or similar."
   exit 1
