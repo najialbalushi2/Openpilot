@@ -2245,7 +2245,6 @@ struct Event {
     carControl @23 :Car.CarControl;
     carOutput @127 :Car.CarOutput;
     longitudinalPlan @24 :LongitudinalPlan;
-    uiPlan @106 :UiPlan;
     ubloxGnss @34 :UbloxGnss;
     ubloxRaw @39 :Data;
     qcomGnss @31 :QcomGnss;
@@ -2366,5 +2365,6 @@ struct Event {
     sensorEventsDEPRECATED @11 :List(SensorEventData);
     lateralPlanDEPRECATED @64 :LateralPlan;
     navModelDEPRECATED @104 :NavModelData;
+    uiPlanDEPRECATED @106 :UiPlan;
   }
 }
