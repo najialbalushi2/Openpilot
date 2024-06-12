@@ -32,7 +32,7 @@ class RouteEngine:
     # Get last gps position & timezone from params
     self.last_position = coordinate_from_param("LastGPSPosition", self.params)
     self.last_bearing = None
-    self.timezone = None
+    self.timezone = ""
     self.timezone_backoff = 0
     self.timezone_counter = 0
 
@@ -88,7 +88,7 @@ class RouteEngine:
     if self.localizer_valid:
       self.last_bearing = math.degrees(location.calibratedOrientationNED.value[2])
       self.last_position = Coordinate(location.positionGeodetic.value[0], location.positionGeodetic.value[1])
-      if self.timezone is None:
+      if self.timezone == "":
         cloudlog.warning("updating timezone every 10 minutes")
         threading.Timer(self.timezone_backoff, self.update_timezone).start()
 
