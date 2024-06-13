@@ -11,6 +11,7 @@ from openpilot.common.numpy_fast import clip, interp
 from openpilot.common.utils import Freezable
 from openpilot.selfdrive.car.docs_definitions import CarDocs
 
+DT_CTRL = 0.01  # car state and control loop timestep (s)
 
 # kg of standard extra cargo to count for drive, gas, etc...
 STD_CARGO_KG = 136.
@@ -18,6 +19,10 @@ STD_CARGO_KG = 136.
 ButtonType = car.CarState.ButtonEvent.Type
 EventName = car.CarEvent.EventName
 AngleRateLimit = namedtuple('AngleRateLimit', ['speed_bp', 'angle_v'])
+
+
+def rate_limit(new_value, last_value, dw_step, up_step):
+  return clip(new_value, last_value + dw_step, last_value + up_step)
 
 
 def apply_hysteresis(val: float, val_steady: float, hyst_gap: float) -> float:
