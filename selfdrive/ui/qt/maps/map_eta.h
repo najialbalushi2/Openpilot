@@ -3,6 +3,8 @@
 #include <QPaintEvent>
 #include <QTextDocument>
 #include <QWidget>
+#include <QTimeZone>
+#include <string>
 
 #include "common/params.h"
 
@@ -11,7 +13,7 @@ class MapETA : public QWidget {
 
 public:
   MapETA(QWidget * parent=nullptr);
-  void updateETA(float seconds, float seconds_typical, float distance);
+  void updateETA(float seconds, float seconds_typical, float distance, std::string tz);
 
 private:
   void paintEvent(QPaintEvent *event) override;
