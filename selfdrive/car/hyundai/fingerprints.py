@@ -1140,7 +1140,7 @@ FW_VERSIONS = {
     (Ecu.hvac, 0x7b3, None): [
         b'\xf1\x00JX1   97255-T6080CONTROL ASS\'Y-DATC  1.07JX1 DATC(-)2.2       ',
     ],
-}
+},
   CAR.KIA_CARNIVAL_4TH_GEN: {
     (Ecu.fwdCamera, 0x7c4, None): [
       b'\xf1\x00KA4 MFC  AT EUR LHD 1.00 1.06 99210-R0000 220221',
