@@ -1132,14 +1132,6 @@ FW_VERSIONS = {
         b'\xf1\x8b #\x011',
         b'\xf1\x10\x00/\x00\x00',
     ],
-    (Ecu.cornerRadar, 0x7b7, None): [
-        b'\xf1\x00JX1_ SCC FHCUP      1.00 1.01 99110-T6100         ',
-        b'\xf1\x00JX1 BCW RR 1.00 , 1.00 (t\x94\x99"\x03\x08\x05S',
-        b'\xf1\x8b "\x11\t "\x11\x04 "\x02\x14 "\x02\x12',
-    ],
-    (Ecu.hvac, 0x7b3, None): [
-        b'\xf1\x00JX1   97255-T6080CONTROL ASS\'Y-DATC  1.07JX1 DATC(-)2.2       ',
-    ],
 },
   CAR.KIA_CARNIVAL_4TH_GEN: {
     (Ecu.fwdCamera, 0x7c4, None): [
